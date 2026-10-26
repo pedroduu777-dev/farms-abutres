@@ -7,6 +7,7 @@ import {
   WebhookSyncStatus,
 } from '../types/farm';
 import { dispatchDeliveryToDiscord } from './discordService';
+import { syncDeliveryToSupabase } from './supabaseService';
 
 const DELIVERIES_KEY = 'fazendalog_deliveries_store_v1';
 const CONFIG_KEY = 'fazendalog_config_store_v1';
@@ -160,6 +161,7 @@ export async function processAndSaveNewDelivery(
 
   const updatedList = [newDelivery, ...currentDeliveries];
   saveStoredDeliveries(updatedList);
+  syncDeliveryToSupabase(newDelivery).catch(() => {});
 
   return { delivery: newDelivery, updatedList };
 }

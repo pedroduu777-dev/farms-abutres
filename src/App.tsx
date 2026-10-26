@@ -26,6 +26,11 @@ import {
   saveStoredDeliveries,
 } from './services/storageService';
 import { dispatchDeliveryToDiscord } from './services/discordService';
+import {
+  fetchDeliveriesFromSupabase,
+  syncDeliveryToSupabase,
+  deleteDeliveryFromSupabase,
+} from './services/supabaseService';
 import { LandingPageView } from './components/LandingPageView';
 import { UserPortalView } from './components/UserPortalView';
 import { AdminPortalView } from './components/AdminPortalView';
@@ -85,10 +90,24 @@ export function App() {
     }, 4500);
   }, []);
 
-  // Sync state from storage
+  // Sync state from storage and Supabase
   useEffect(() => {
-    setDeliveries(loadStoredDeliveries());
+    const local = loadStoredDeliveries();
+    setDeliveries(local);
     setConfig(loadStoredConfig());
+
+    fetchDeliveriesFromSupabase().then((remote) => {
+      if (remote && remote.length > 0) {
+        const map = new Map<string, FarmDelivery>();
+        local.forEach((d) => map.set(d.id, d));
+        remote.forEach((d) => map.set(d.id, d));
+        const merged = Array.from(map.values()).sort(
+          (a, b) => new Date(b.deliveredAt).getTime() - new Date(a.deliveredAt).getTime()
+        );
+        setDeliveries(merged);
+        saveStoredDeliveries(merged);
+      }
+    });
   }, []);
 
   // Secret keyboard shortcut to trigger Admin Login: Ctrl + Shift + A
@@ -181,7 +200,13 @@ export function App() {
 
       if (selectedDelivery?.id === id) {
         const found = updated.find((d) => d.id === id);
-        if (found) setSelectedDelivery(found);
+        if (found) {
+          setSelectedDelivery(found);
+          syncDeliveryToSupabase(found).catch(() => {});
+        }
+      } else {
+        const found = updated.find((d) => d.id === id);
+        if (found) syncDeliveryToSupabase(found).catch(() => {});
       }
 
       if (!res.ok) {
@@ -208,9 +233,12 @@ export function App() {
     setDeliveries(updated);
     saveStoredDeliveries(updated);
 
-    if (selectedDelivery?.id === id) {
-      const found = updated.find((d) => d.id === id);
-      if (found) setSelectedDelivery(found);
+    const found = updated.find((d) => d.id === id);
+    if (found) {
+      if (selectedDelivery?.id === id) {
+        setSelectedDelivery(found);
+      }
+      syncDeliveryToSupabase(found).catch(() => {});
     }
 
     showToast(
@@ -223,6 +251,7 @@ export function App() {
     const updated = deliveries.filter((d) => d.id !== id);
     setDeliveries(updated);
     saveStoredDeliveries(updated);
+    deleteDeliveryFromSupabase(id).catch(() => {});
     showToast('success', `Registro ${id} removido.`);
   };
 
