@@ -12,6 +12,9 @@ export default defineConfig(() => {
         '@': path.resolve('.'),
       },
     },
+    build: {
+      outDir: 'docs',
+    },
     server: {
       host: '0.0.0.0',
       port: 3000,
