@@ -1,0 +1,6 @@
+{
+  "name": "FazendaLog — Painel de Farm FiveM",
+  "description": "Painel de entrega e auditoria de farm para FiveM com comprovante por foto, registro de data e hora, quantidade entregue e envio automático de logs via Webhook no Discord.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
