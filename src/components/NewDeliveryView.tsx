@@ -614,20 +614,6 @@ export const NewDeliveryView: React.FC<NewDeliveryViewProps> = ({
                     <p className="text-xs text-slate-400 mt-1">
                       Aceita PrintScreen direto do FiveM (`Win+Shift+S`), PNG, JPG ou WEBP
                     </p>
-
-                    <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-center">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPhotoUrl('seed:herbs');
-                        }}
-                        className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <ImageIcon className="w-3.5 h-3.5" />
-                        Preencher com captura simulada de teste do baú
-                      </button>
-                    </div>
                   </div>
                 ) : (
                   <div className="relative rounded-xl overflow-hidden border border-slate-700 bg-[#070A10]">
