@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Abutres — Painel de Farm FiveM</title>
+    <meta
+      name="description"
+      content="Painel de entrega e auditoria de farm da organização Abutres no FiveM com comprovante por foto, registro de data e hora, quantidade entregue e envio automático de logs via Webhook no Discord."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // This script redirects any 404 path back to index.html with the path encoded in the query string or hash
+      var pathSegmentsToKeep = 1;
+      var l = window.location;
+      if (l.pathname.split('/')[1]) {
+        // If hosted on GitHub Pages under repository name (e.g. /farms-abutres/), keep that segment
+        pathSegmentsToKeep = 2;
+      }
+      var redirectPath = l.pathname.split('/').slice(0, pathSegmentsToKeep).join('/');
+      var relativePath = l.pathname.slice(redirectPath.length).split('/').filter(function(p){ return p !== ""; }).join('/');
+      if (relativePath !== "") {
+        l.replace(
+          l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+          redirectPath + '/?p=/' + relativePath + (l.search ? '&' + l.search.slice(1) : '') + l.hash
+        );
+      }
+    </script>
+  </head>
+  <body class="bg-[#0B0F17] text-slate-100 antialiased">
+    <div id="root"></div>
+    <script type="module" src="./src/main.tsx"></script>
+  </body>
+</html>
