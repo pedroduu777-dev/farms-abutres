@@ -4,29 +4,29 @@ Painel completo de gestão, envio de comprovantes de farm, auditoria e sincroniz
 
 ---
 
-## 🚀 Como Executar no GitHub / Localmente
+## 🚀 Como Publicar no GitHub e Abrir o Site Automaticamente
 
-Quando você clona este repositório do GitHub em sua máquina ou ambiente de desenvolvimento, para garantir que todas as dependências do `package.json` sejam instaladas automaticamente e o aplicativo nunca fique em tela branca:
+Este repositório já vem configurado com **GitHub Actions** (`.github/workflows/deploy.yml`) para publicar o site automaticamente no **GitHub Pages** sempre que você enviar (`push`) suas alterações.
 
-1. **Instalar as dependências automaticamente**:
+### 🌐 Passos para ativar no seu GitHub:
+1. Suba este código para o seu repositório no GitHub.
+2. No seu repositório no GitHub, vá em **Settings** (Configurações) > **Pages**.
+3. Em **Build and deployment**, selecione **Source** como **GitHub Actions**.
+4. Faça um pequeno commit ou aguarde o action rodar. O link oficial do seu site (ex: `https://seu-usuario.github.io/nome-do-repo/`) abrirá diretamente o site funcional, sem telas brancas!
+
+---
+
+## 💻 Desenvolvimento Local
+
+1. **Instalar dependências**:
    ```bash
    npm install
    ```
-2. **Iniciar o servidor de desenvolvimento (Local)**:
+2. **Executar em desenvolvimento**:
    ```bash
    npm run dev
    ```
-   Abra o navegador em `http://localhost:3000`.
-
 3. **Gerar build de produção**:
    ```bash
    npm run build
    ```
-
----
-
-## ⚙️ Configurações Integradas
-
-- **Banco de Dados (Supabase)**: Já conectado ao banco configurado para persistência das entregas (`deliveries`), metas e logs.
-- **Webhook do Discord**: Configurado com envio automático para o canal da organização e menção ao responsável (`<@1528141958856442052>`).
-- **Proteção contra Tela Branca**: O aplicativo possui um `ErrorBoundary` global robusto que captura qualquer exceção e permite limpar o cache e recarregar a aplicação de forma segura.
