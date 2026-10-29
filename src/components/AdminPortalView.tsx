@@ -10,12 +10,17 @@ import {
   Save,
   CheckCircle2,
   AlertCircle,
+  Users,
+  Trash2,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   AuditStatus,
   DiscordWebhookConfig,
   FarmDelivery,
+  MemberAccount,
 } from '../types/farm';
+import { loadStoredMembers, saveStoredMembers } from '../services/storageService';
 import { DeliveryHistoryView } from './DeliveryHistoryView';
 import { LeaderboardView } from './LeaderboardView';
 import { WebhookSettingsView } from './WebhookSettingsView';
@@ -60,6 +65,16 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
     type: 'success' | 'error';
     msg: string;
   } | null>(null);
+
+  const [members, setMembers] = useState<MemberAccount[]>(() => loadStoredMembers());
+
+  const handleDeleteMember = (id: string) => {
+    if (window.confirm(`Deseja remover o cadastro do membro com ID #${id}? Ele precisará se cadastrar novamente.`)) {
+      const updated = members.filter((m) => m.id !== id);
+      setMembers(updated);
+      saveStoredMembers(updated);
+    }
+  };
 
   const pendingCount = deliveries.filter(
     (d) => d.auditStatus === AuditStatus.PENDENTE
@@ -299,6 +314,56 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
               <span>{isSavingPin ? 'Salvando...' : 'Atualizar PIN Secreto'}</span>
             </button>
           </form>
+
+          {/* Membros Cadastrados */}
+          <div className="border-t border-slate-800 pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-indigo-400" />
+                  <span>Membros Cadastrados ({members.length})</span>
+                </h4>
+                <p className="text-xs text-slate-400">
+                  Jogadores com nome, passaporte e senha de 4 dígitos cadastrados.
+                </p>
+              </div>
+            </div>
+
+            {members.length === 0 ? (
+              <div className="p-4 bg-[#0B0F17] border border-slate-800/80 rounded-lg text-center text-xs text-slate-500">
+                Nenhum membro se cadastrou ainda. O cadastro é feito ao clicar em "Entregar Farm".
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                {members.map((m) => (
+                  <div
+                    key={m.id}
+                    className="p-3 bg-[#0B0F17] border border-slate-800 rounded-lg flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-200">{m.name}</span>
+                        <span className="font-mono text-slate-400">#{m.id}</span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 font-mono">
+                        PIN: <span className="text-slate-400 tracking-widest font-semibold">{m.pin}</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteMember(m.id)}
+                      className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 rounded transition-colors cursor-pointer"
+                      title="Excluir cadastro do membro"
+                      aria-label="Excluir cadastro"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

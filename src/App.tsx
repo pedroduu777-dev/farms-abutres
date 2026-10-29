@@ -16,6 +16,7 @@ import {
   DiscordWebhookConfig,
   FarmCategory,
   FarmDelivery,
+  MemberAccount,
 } from './types/farm';
 import {
   clearAllDeliveries,
@@ -24,6 +25,8 @@ import {
   processAndSaveNewDelivery,
   saveStoredConfig,
   saveStoredDeliveries,
+  getActiveMember,
+  setActiveMember,
 } from './services/storageService';
 import { dispatchDeliveryToDiscord } from './services/discordService';
 import {
@@ -35,6 +38,7 @@ import { LandingPageView } from './components/LandingPageView';
 import { UserPortalView } from './components/UserPortalView';
 import { AdminPortalView } from './components/AdminPortalView';
 import { AdminLoginModal } from './components/AdminLoginModal';
+import { MemberAuthModal } from './components/MemberAuthModal';
 import { ProofLightboxModal } from './components/ProofImage';
 import { DiscordBotGuideModal } from './components/DiscordBotGuideModal';
 
@@ -55,6 +59,8 @@ export function App() {
 
   const [isAdminLoginModalOpen, setIsAdminLoginModalOpen] = useState(false);
   const [isDiscordGuideOpen, setIsDiscordGuideOpen] = useState(false);
+  const [isMemberAuthModalOpen, setIsMemberAuthModalOpen] = useState(false);
+  const [activeMember, setActiveMemberState] = useState<MemberAccount | null>(() => getActiveMember());
 
   const [deliveries, setDeliveries] = useState<FarmDelivery[]>(() => loadStoredDeliveries());
   const [config, setConfig] = useState<DiscordWebhookConfig>(() => loadStoredConfig());
@@ -147,6 +153,24 @@ export function App() {
     }
     setViewMode('user');
     showToast('success', 'Sessão de ADM bloqueada. Retornado ao modo de usuário.');
+  };
+
+  const handleMemberAuthSuccess = (member: MemberAccount) => {
+    setActiveMemberState(member);
+    setSavedPlayerName(member.name);
+    setSavedPassportId(member.id);
+    setIsMemberAuthModalOpen(false);
+    setViewMode('user');
+    showToast('success', `Identificado como ${member.name} (#${member.id})`);
+  };
+
+  const handleLogoutMember = () => {
+    setActiveMember(null);
+    setActiveMemberState(null);
+    setSavedPlayerName('');
+    setSavedPassportId('');
+    setViewMode('landing');
+    showToast('success', 'Sessão do membro encerrada.');
   };
 
   const handleSavePlayerIdentity = (name: string, passport: string) => {
@@ -318,8 +342,16 @@ export function App() {
         <LandingPageView
           config={displayConfig}
           totalDeliveriesCount={deliveries.length}
-          onEnterPanel={() => setViewMode('user')}
+          onEnterPanel={() => setIsMemberAuthModalOpen(true)}
           onOpenAdminLogin={() => setIsAdminLoginModalOpen(true)}
+        />
+
+        <MemberAuthModal
+          isOpen={isMemberAuthModalOpen}
+          onClose={() => setIsMemberAuthModalOpen(false)}
+          onSuccess={handleMemberAuthSuccess}
+          initialMode={activeMember ? 'login' : 'register'}
+          prefilledPassportId={savedPassportId || activeMember?.id}
         />
 
         <DiscordBotGuideModal
@@ -332,6 +364,24 @@ export function App() {
               setIsAdminLoginModalOpen(true);
             }
           }}
+        />
+
+        {/* Member Auth Modal */}
+        <MemberAuthModal
+          isOpen={isMemberAuthModalOpen}
+          onClose={() => setIsMemberAuthModalOpen(false)}
+          onSuccess={handleMemberAuthSuccess}
+          initialMode={activeMember ? 'login' : 'register'}
+          prefilledPassportId={savedPassportId || activeMember?.id}
+        />
+
+        {/* Member Auth Modal (Registration & 4-Digit PIN Access) */}
+        <MemberAuthModal
+          isOpen={isMemberAuthModalOpen}
+          onClose={() => setIsMemberAuthModalOpen(false)}
+          onSuccess={handleMemberAuthSuccess}
+          initialMode={activeMember ? 'login' : 'register'}
+          prefilledPassportId={savedPassportId || activeMember?.id}
         />
 
         <AdminLoginModal
@@ -428,6 +478,7 @@ export function App() {
             onSelectDeliveryForModal={setSelectedDelivery}
             onOpenDiscordGuide={() => setIsDiscordGuideOpen(true)}
             onOpenAdminLogin={() => setIsAdminLoginModalOpen(true)}
+            onLogoutMember={handleLogoutMember}
           />
         ) : (
           <AdminPortalView
@@ -477,6 +528,15 @@ export function App() {
             setIsAdminLoginModalOpen(true);
           }
         }}
+      />
+
+      {/* Member Auth Modal (Registration & 4-Digit PIN Access) */}
+      <MemberAuthModal
+        isOpen={isMemberAuthModalOpen}
+        onClose={() => setIsMemberAuthModalOpen(false)}
+        onSuccess={handleMemberAuthSuccess}
+        initialMode={activeMember ? 'login' : 'register'}
+        prefilledPassportId={savedPassportId || activeMember?.id}
       />
 
       {/* Toast Notification */}

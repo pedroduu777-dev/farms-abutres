@@ -86,7 +86,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             onClick={onEnterPanel}
             className="group relative inline-flex items-center justify-center gap-3 px-8 sm:px-12 py-4 sm:py-4.5 rounded-xl text-base sm:text-lg font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 hover:from-indigo-500 hover:to-indigo-400 shadow-2xl shadow-indigo-600/40 hover:shadow-indigo-500/50 border border-indigo-400/40 transition-all duration-200 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-indigo-500/30"
           >
-            <span>Entrega de Farm</span>
+            <span>Entregar Farm</span>
             <ArrowRight className="w-5 h-5 text-indigo-200 group-hover:translate-x-1.5 transition-transform duration-200" />
           </button>
         </div>

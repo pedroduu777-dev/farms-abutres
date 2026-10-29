@@ -7,6 +7,8 @@ import {
   HelpCircle,
   Eye,
   Shield,
+  LogOut,
+  UserCheck,
 } from 'lucide-react';
 import {
   AuditStatus,
@@ -28,6 +30,7 @@ interface UserPortalViewProps {
   onSelectDeliveryForModal: (delivery: FarmDelivery) => void;
   onOpenDiscordGuide: () => void;
   onOpenAdminLogin: () => void;
+  onLogoutMember?: () => void;
 }
 
 export const UserPortalView: React.FC<UserPortalViewProps> = ({
@@ -40,6 +43,7 @@ export const UserPortalView: React.FC<UserPortalViewProps> = ({
   onSelectDeliveryForModal,
   onOpenDiscordGuide,
   onOpenAdminLogin,
+  onLogoutMember,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'deliver' | 'my_history'>('deliver');
 
@@ -73,16 +77,30 @@ export const UserPortalView: React.FC<UserPortalViewProps> = ({
             <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">
               Área do Membro · {config.serverName}
             </span>
-            <h2 className="text-xl font-bold text-slate-100">
-              {savedPlayerName ? (
-                <>
-                  Olá, <span className="text-indigo-300">{savedPlayerName}</span>{' '}
-                  <span className="text-sm font-mono text-slate-400">#{savedPassportId}</span>
-                </>
-              ) : (
-                'Portal de Entrega de Farm'
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-xl font-bold text-slate-100">
+                {savedPlayerName ? (
+                  <>
+                    Olá, <span className="text-indigo-300">{savedPlayerName}</span>{' '}
+                    <span className="text-sm font-mono text-slate-400">#{savedPassportId}</span>
+                  </>
+                ) : (
+                  'Portal de Entrega de Farm'
+                )}
+              </h2>
+
+              {onLogoutMember && savedPlayerName && (
+                <button
+                  type="button"
+                  onClick={onLogoutMember}
+                  className="px-2.5 py-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 rounded-lg text-xs text-slate-400 hover:text-rose-300 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+                  title="Trocar de Conta ou Desconectar"
+                >
+                  <LogOut className="w-3 h-3 text-slate-400 hover:text-rose-300" />
+                  <span>Trocar Membro</span>
+                </button>
               )}
-            </h2>
+            </div>
             <p className="text-xs text-slate-400">
               Registre o depósito do baú com print e acompanhe sua meta semanal aqui.
             </p>

@@ -9,6 +9,7 @@ import {
   AlertCircle,
   HelpCircle,
   Image as ImageIcon,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   CreateDeliveryPayload,
@@ -85,8 +86,8 @@ export const NewDeliveryView: React.FC<NewDeliveryViewProps> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (savedPlayerName && !playerName) setPlayerName(savedPlayerName);
-    if (savedPassportId && !passportId) setPassportId(savedPassportId);
+    if (savedPlayerName) setPlayerName(savedPlayerName);
+    if (savedPassportId) setPassportId(savedPassportId);
   }, [savedPlayerName, savedPassportId]);
 
   useEffect(() => {
@@ -301,6 +302,15 @@ export const NewDeliveryView: React.FC<NewDeliveryViewProps> = ({
 
           {/* 1. Identificação no FiveM & Discord */}
           <div className="space-y-3">
+            {savedPlayerName && savedPassportId ? (
+              <div className="flex items-center gap-2 px-3 py-2 bg-indigo-950/40 border border-indigo-800/60 rounded-xl text-xs text-indigo-300">
+                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>
+                  Entrega vinculada ao membro cadastrado: <strong className="text-white">{savedPlayerName}</strong> (#{savedPassportId})
+                </span>
+              </div>
+            ) : null}
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
                 <label

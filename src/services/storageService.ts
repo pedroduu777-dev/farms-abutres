@@ -4,6 +4,7 @@ import {
   DiscordWebhookConfig,
   FarmCategory,
   FarmDelivery,
+  MemberAccount,
   WebhookSyncStatus,
 } from '../types/farm';
 import { dispatchDeliveryToDiscord } from './discordService';
@@ -12,6 +13,8 @@ import { syncDeliveryToSupabase } from './supabaseService';
 const DELIVERIES_KEY = 'fazendalog_deliveries_store_v1';
 const CONFIG_KEY = 'fazendalog_config_store_v1';
 const WIPE_FLAG_KEY = 'fazendalog_reset_clean_v2';
+const MEMBERS_STORAGE_KEY = 'fazendalog_members_accounts_v1';
+const ACTIVE_MEMBER_KEY = 'fazendalog_active_member_session_v1';
 
 const DEFAULT_WEBHOOK_URL =
   'https://discord.com/api/webhooks/1564322368573415568/717AXX9zSrC6Q_XlKJpYPoZtRC4kuQ5W76mMnZ4QMlK5pYf4ONKnVmcRVeAzzfGZ4lWu';
@@ -165,3 +168,153 @@ export async function processAndSaveNewDelivery(
 
   return { delivery: newDelivery, updatedList };
 }
+
+export function loadStoredMembers(): MemberAccount[] {
+  try {
+    const raw = localStorage.getItem(MEMBERS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Erro ao ler membros do localStorage:', e);
+  }
+  return [];
+}
+
+export function saveStoredMembers(members: MemberAccount[]): void {
+  try {
+    localStorage.setItem(MEMBERS_STORAGE_KEY, JSON.stringify(members));
+  } catch (e) {
+    console.warn('Erro ao salvar membros no localStorage:', e);
+  }
+}
+
+export function getActiveMember(): MemberAccount | null {
+  try {
+    const raw = localStorage.getItem(ACTIVE_MEMBER_KEY);
+    if (raw) {
+      return JSON.parse(raw);
+    }
+  } catch (e) {
+    console.warn('Erro ao ler membro ativo:', e);
+  }
+  return null;
+}
+
+export function setActiveMember(member: MemberAccount | null): void {
+  try {
+    if (member) {
+      localStorage.setItem(ACTIVE_MEMBER_KEY, JSON.stringify(member));
+    } else {
+      localStorage.removeItem(ACTIVE_MEMBER_KEY);
+    }
+  } catch (e) {
+    console.warn('Erro ao salvar membro ativo:', e);
+  }
+}
+
+export function registerMember(
+  name: string,
+  passportId: string,
+  pin: string
+): { success: boolean; message: string; member?: MemberAccount } {
+  const cleanName = name.trim();
+  const cleanId = passportId.trim().replace(/^#/, '');
+  const cleanPin = pin.trim();
+
+  if (!cleanName) {
+    return { success: false, message: 'Digite o seu nome ou nick no FiveM.' };
+  }
+  if (!cleanId) {
+    return { success: false, message: 'Digite o seu ID / Passaporte.' };
+  }
+  if (!/^\d{4}$/.test(cleanPin)) {
+    return { success: false, message: 'A senha deve conter exatamente 4 números (ex: 1234).' };
+  }
+
+  const members = loadStoredMembers();
+  const existing = members.find((m) => m.id.toLowerCase() === cleanId.toLowerCase());
+
+  if (existing) {
+    // If PIN matches, log in directly and optionally update name if changed
+    if (existing.pin === cleanPin) {
+      const updated: MemberAccount = {
+        ...existing,
+        name: cleanName,
+        lastLoginAt: new Date().toISOString(),
+      };
+      const updatedList = members.map((m) =>
+        m.id.toLowerCase() === cleanId.toLowerCase() ? updated : m
+      );
+      saveStoredMembers(updatedList);
+      setActiveMember(updated);
+      return { success: true, message: `Bem-vindo de volta, ${updated.name}!`, member: updated };
+    }
+    return {
+      success: false,
+      message: `O ID #${cleanId} já está cadastrado. Insira a senha correta de 4 dígitos na aba "Já sou Cadastrado" ou altere o ID.`,
+    };
+  }
+
+  const newMember: MemberAccount = {
+    id: cleanId,
+    name: cleanName,
+    pin: cleanPin,
+    createdAt: new Date().toISOString(),
+    lastLoginAt: new Date().toISOString(),
+  };
+
+  members.push(newMember);
+  saveStoredMembers(members);
+  setActiveMember(newMember);
+
+  return { success: true, message: `Cadastro realizado com sucesso! Olá, ${newMember.name}.`, member: newMember };
+}
+
+export function authenticateMember(
+  passportId: string,
+  pin: string
+): { success: boolean; message: string; member?: MemberAccount } {
+  const cleanId = passportId.trim().replace(/^#/, '');
+  const cleanPin = pin.trim();
+
+  if (!cleanId) {
+    return { success: false, message: 'Digite o seu ID / Passaporte.' };
+  }
+  if (!/^\d{4}$/.test(cleanPin)) {
+    return { success: false, message: 'A senha deve conter exatamente 4 números.' };
+  }
+
+  const members = loadStoredMembers();
+  const found = members.find((m) => m.id.toLowerCase() === cleanId.toLowerCase());
+
+  if (!found) {
+    return {
+      success: false,
+      message: `Nenhum membro encontrado com o ID #${cleanId}. Faça seu cadastro na aba "Novo Cadastro".`,
+    };
+  }
+
+  if (found.pin !== cleanPin) {
+    return {
+      success: false,
+      message: 'Senha de 4 dígitos incorreta para este passaporte. Tente novamente.',
+    };
+  }
+
+  const updated: MemberAccount = {
+    ...found,
+    lastLoginAt: new Date().toISOString(),
+  };
+  const updatedList = members.map((m) =>
+    m.id.toLowerCase() === cleanId.toLowerCase() ? updated : m
+  );
+  saveStoredMembers(updatedList);
+  setActiveMember(updated);
+
+  return { success: true, message: `Acesso liberado! Olá, ${updated.name}.`, member: updated };
+}
+

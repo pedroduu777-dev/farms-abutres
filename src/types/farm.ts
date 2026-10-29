@@ -71,3 +71,11 @@ export interface CreateDeliveryPayload {
   photoUrl: string;
   notes?: string;
 }
+
+export interface MemberAccount {
+  id: string; // Passaporte / ID do jogador (ex: "1542")
+  name: string; // Nome ou Nick do jogador
+  pin: string; // Senha numérica de 4 dígitos (ex: "1234")
+  createdAt: string;
+  lastLoginAt?: string;
+}
